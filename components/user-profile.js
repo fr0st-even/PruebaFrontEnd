@@ -1,5 +1,7 @@
 import { URI } from "../javascript/uri";
 
+const URL =  URI + '/api';
+
 class UserProfile extends HTMLElement {
     constructor() {
         super();
@@ -54,7 +56,7 @@ class UserProfile extends HTMLElement {
             }
 
             // Cargar información del usuario
-            const userResponse = await fetch(`${URI}/api/users`);
+            const userResponse = await fetch(`${URL}/users`);
             const users = await userResponse.json();
             const user = users.find(u => u.id == profileUserId);
 
@@ -64,7 +66,7 @@ class UserProfile extends HTMLElement {
             }
 
             // Cargar imágenes del usuario
-            const imagesResponse = await fetch(`${URI}/api/images`);
+            const imagesResponse = await fetch(`${URL}/images`);
             const allImages = await imagesResponse.json();
             const userImages = allImages.filter(img => img.user_id == profileUserId);
 
