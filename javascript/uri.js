@@ -1,1 +1,1 @@
-export const URI = 'http://localhost:5000';
+export const URI = 'https://pruebabackend-3hq3.onrender.com';
