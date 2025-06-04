@@ -52,7 +52,7 @@ class UserProfile extends HTMLElement {
             }
 
             // Cargar información del usuario
-            const userResponse = await fetch(`https://pruebabackend-3hq3.onrender.com/api/users`);
+            const userResponse = await fetch(`http://localhost:5000/api/users`);
             const users = await userResponse.json();
             const user = users.find(u => u.id == profileUserId);
 
@@ -62,7 +62,7 @@ class UserProfile extends HTMLElement {
             }
 
             // Cargar imágenes del usuario
-            const imagesResponse = await fetch(`https://pruebabackend-3hq3.onrender.com/api/images`);
+            const imagesResponse = await fetch(`http://localhost:5000/api/images`);
             const allImages = await imagesResponse.json();
             const userImages = allImages.filter(img => img.user_id == profileUserId);
 
@@ -77,19 +77,28 @@ class UserProfile extends HTMLElement {
     }
 
     updateProfileInfo(user, imageCount) {
-        const usernameEl = this.querySelector('#profile-username');
-        const photoEl = this.querySelector('#profile-photo');
-        const statsEl = this.querySelector('#user-stats');
+    const usernameEl = this.querySelector('#profile-username');
+    const photoEl = this.querySelector('#profile-photo');
+    const statsEl = this.querySelector('#user-stats');
 
-        usernameEl.textContent = user.username;
-        statsEl.textContent = `${imageCount} fotos subidas`;
+    usernameEl.textContent = user.username;
+    statsEl.textContent = `${imageCount} fotos subidas`;
 
-        if (user.photo) {
-            photoEl.src = `data:image/png;base64,${user.photo}`;
-        } else {
+    // El campo en el backend se llama 'profile_photo'
+    if (user.profile_photo) {
+        // La foto está almacenada como base64 puro (sin prefijo data:image)
+        photoEl.src = `data:image/jpeg;base64,${user.profile_photo}`;
+        
+        // Manejar errores de carga de imagen
+        photoEl.onerror = () => {
+            console.warn('Error cargando foto de perfil, usando avatar por defecto');
             photoEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&size=150`;
-        }
+        };
+    } else {
+        // Foto por defecto si no hay foto
+        photoEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&size=150`;
     }
+}
 
     loadUserGallery(images) {
         const galleryEl = this.querySelector('#user-gallery');
