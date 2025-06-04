@@ -1,7 +1,3 @@
-import { URI } from "../javascript/uri";
-
-const URL =  URI + '/api';
-
 class UserProfile extends HTMLElement {
     constructor() {
         super();
