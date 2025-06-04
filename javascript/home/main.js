@@ -43,6 +43,17 @@ document.addEventListener("DOMContentLoaded", () => {
         updateNavbarActive('li-misfotos');
     });
 
+    // AGREGAR ESTE EVENT LISTENER PARA EL BOTÓN "MI PERFIL"
+    document.getElementById("btn-profile").addEventListener("click", () => {
+        window.location.href = `profile.html?user_id=${userId}`;
+    });
+
+    // Event listener para cerrar sesión (opcional)
+    document.getElementById("btn-logout").addEventListener("click", () => {
+        localStorage.removeItem('user_id');
+        window.location.href = './login.html';
+    });
+
     initUploader();
     loadData(false);
     updateNavbarActive('li-general');

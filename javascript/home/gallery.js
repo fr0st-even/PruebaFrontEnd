@@ -1,6 +1,6 @@
 // importamos modulos externos de javascript
 import { URI } from "../uri.js";
-import { fetchComments, fetchImages } from "./services/api.js";
+import { fetchComments, fetchImages, toggleLike } from "./services/api.js";
 
 export async function loadGallery(users, onlyMine = false) {
     const userId = parseInt(localStorage.getItem("user_id"));
@@ -54,6 +54,15 @@ export async function loadGallery(users, onlyMine = false) {
             return `<p>${commenterNameHtml}: ${c.text}</p>`;
         }).join('');
 
+        // Verificar si el usuario actual ya dio like a esta imagen
+        const userLiked = img.likes && img.likes.includes(userId);
+        const likesCount = img.likes ? img.likes.length : 0;
+        
+        // Configurar el ícono y color del botón de like
+        const likeIcon = userLiked ? 'favorite' : 'favorite_border';
+        const likeButtonClass = userLiked ? 'red' : 'grey';
+        const likeIconClass = userLiked ? 'white-text' : '';
+
         // <div class='col s12 m6 l4'></div>
         const card = document.createElement('div');
         card.className = 'col s12 m6 l4';
@@ -64,9 +73,15 @@ export async function loadGallery(users, onlyMine = false) {
                 </div>
                 <div class='card-content'>
                     <div class='like-section'>
-                        <a class='btn-floating halfway-fab waves-effect waves-light grey 
+                        <span class="likes-count" style="position: absolute; top: 100%; left: 290px; 
+                              transform: translateY(-50%); background: rgba(0,0,0,0.7); 
+                              color: white; padding: 4px 8px; border-radius: 15px; 
+                              font-size: 12px; font-weight: bold; z-index: 1;">
+                            ${likesCount}
+                        </span>
+                        <a class='btn-floating halfway-fab waves-effect waves-light ${likeButtonClass} 
                             like-btn' data-imageid='${img.id}'>
-                            <i class='material-icons'>favorite_border</i>
+                            <i class='material-icons ${likeIconClass}'>${likeIcon}</i>
                         </a>
                     </div>
                     <span class='card-title'>Subido por: ${uploaderNameHtml}</span>
@@ -112,20 +127,38 @@ export async function loadGallery(users, onlyMine = false) {
 
     // Evento para manejar likes
     container.querySelectorAll('.like-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const imageId = btn.getAttribute('data-imageid');
+        btn.addEventListener('click', async () => {
+            const imageId = parseInt(btn.getAttribute('data-imageid'));
             const icon = btn.querySelector('i');
+            const countSpan = btn.parentElement.querySelector('.likes-count');
 
-            if (icon.textContent === 'favorite_border') {
-                icon.textContent = 'favorite';
-                icon.classList.add('white-text');
-                btn.classList.add('red');
-                btn.classList.remove('grey');
-            } else {
-                icon.textContent = 'favorite_border';
-                icon.classList.remove('white-text');
-                btn.classList.remove('red');
-                btn.classList.add('grey');
+            try {
+                const response = await toggleLike(imageId, userId);
+                
+                if (response.success) {
+                    // Actualizar la UI basado en la respuesta del servidor
+                    if (response.liked) {
+                        icon.textContent = 'favorite';
+                        icon.classList.add('white-text');
+                        btn.classList.add('red');
+                        btn.classList.remove('grey');
+                    } else {
+                        icon.textContent = 'favorite_border';
+                        icon.classList.remove('white-text');
+                        btn.classList.remove('red');
+                        btn.classList.add('grey');
+                    }
+                    
+                    // Actualizar contador de likes
+                    countSpan.textContent = response.likes_count;
+                    
+                    // Mostrar notificación de éxito
+                    const message = response.liked ? 'Like agregado' : 'Like removido';
+                    M.toast({html: message, classes: 'green'});
+                }
+            } catch (error) {
+                console.error('Error al procesar like:', error);
+                M.toast({html: 'Error al procesar like', classes: 'red'});
             }
         });
     });

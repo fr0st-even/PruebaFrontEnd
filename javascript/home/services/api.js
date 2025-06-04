@@ -1,42 +1,71 @@
 import { URI } from "../../uri.js";
 
-const URL =  URI + '/api';
-
-// Export: Hace que pueda llamarse desde otros archivos de javascript
-// Async: Hace a la función asincrona
 export async function fetchUsers() {
-    const res = await fetch(`${URL}/users`);
-    return res.json();
+    const response = await fetch(`${URI}/api/users`);
+    return await response.json();
 }
 
 export async function fetchImages() {
-    const res = await fetch(`${URL}/images`);
-    return res.json();
+    const response = await fetch(`${URI}/api/images`);
+    return await response.json();
 }
 
-export async function uploadImage(file, userId) {
-    const formData = new FormData();
-    // Empaquetando nuestra información en el FormData
-    formData.append('image', file);
-    formData.append('user_id', userId);
-
-    const res = await fetch(`${URL}/upload`, {
+export async function fetchComments(imageId, userId, comment) {
+    const response = await fetch(`${URI}/api/comment/${imageId}`, {
         method: 'POST',
-        body: formData
-    });
-
-    return res.json();
-}
-
-export async function fetchComments(imageId, userId, text) {
-    const res = await fetch(`${URL}/comment/${imageId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
             user_id: userId,
-            comment: text
+            comment: comment
         })
     });
+    
+    if (!response.ok) {
+        throw new Error('Error al agregar comentario');
+    }
+    
+    return await response.json();
+}
 
-    return res.json();
+export async function toggleLike(imageId, userId) {
+    const response = await fetch(`${URI}/api/like/${imageId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            user_id: userId
+        })
+    });
+    
+    if (!response.ok) {
+        throw new Error('Error al procesar like');
+    }
+    
+    return await response.json();
+}
+
+export async function getLikes(imageId) {
+    const response = await fetch(`${URI}/api/likes/${imageId}`);
+    
+    if (!response.ok) {
+        throw new Error('Error al obtener likes');
+    }
+    
+    return await response.json();
+}
+
+export async function uploadImage(formData) {
+    const response = await fetch(`${URI}/api/upload`, {
+        method: 'POST',
+        body: formData // FormData se envía directamente sin Content-Type
+    });
+    
+    if (!response.ok) {
+        throw new Error('Error al subir imagen');
+    }
+    
+    return await response.json();
 }
