@@ -1,5 +1,6 @@
 import { URI } from "../../uri.js";
 
+const URL = URI + '/api';
 export async function fetchUsers() {
     const response = await fetch(`${URI}/api/users`);
     return await response.json();
@@ -57,15 +58,16 @@ export async function getLikes(imageId) {
     return await response.json();
 }
 
-export async function uploadImage(formData) {
-    const response = await fetch(`${URI}/api/upload`, {
+export async function uploadImage(file, userId) {
+    const formData = new FormData();
+    // Empaquetando nuestra información en el FormData
+    formData.append('image', file);
+    formData.append('user_id', userId);
+
+    const res = await fetch(`${URL}/upload`, {
         method: 'POST',
-        body: formData // FormData se envía directamente sin Content-Type
+        body: formData
     });
-    
-    if (!response.ok) {
-        throw new Error('Error al subir imagen');
-    }
-    
-    return await response.json();
+
+    return res.json();
 }
